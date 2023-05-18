@@ -25,13 +25,14 @@ function love.keypressed(key)
     end
 end
 
-
 function love.draw()
-    function getTotal(hand)
-        total = 0
-        for cardIndex, card in iparis(hand) do
-            total += card.rank
+    local function getTotal(hand)
+        local total = 0
+
+        for cardIndex, card in ipairs(hand) do
+            total = total + card.rank
         end
+
         return total
     end
 
