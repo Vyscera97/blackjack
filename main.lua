@@ -22,17 +22,24 @@ function love.load()
 end
 
 function love.keypressed(key)
-    if key == 'h' and not roundOver then
-        takeCard(playerHand)
-    elseif key == 's' then
-        roundOver = true
+    if not roundOver then
+        if key == 'h' then
+            takeCard(playerHand)
+            if getTotal(playerHand) >= 21 then
+                roundOver = true
+            end
+        elseif key == 's' then
+            roundOver = true
+        end
+    else
+        love.load()
     end
 end
 
 function love.draw()
-    local function getTotal(hand)
+    function getTotal(hand)
         local total = 0
-        local hasAce = false
+        hasAce = false
 
         for cardIndex, card in ipairs(hand) do
             if card.rank > 10 then
@@ -65,20 +72,38 @@ function love.draw()
 
     table.insert(output, 'Dealer Hand:')
     for cardIndex, card in ipairs(dealerHand) do
-        table.insert(output, 'suit: '..card.suit..', rank: '..card.rank)
+        if not roundOver and cardIndex == 1 then
+            table.insert(output, '(Card hidden)')
+        else
+            table.insert(output, 'suit: '..card.suit..', rank: '..card.rank)
+        end        
     end
     table.insert(output, 'Total: '..getTotal(dealerHand))       
 
     if roundOver then
+        while getTotal(dealerHand) <= 17 do
+            if getTotal(dealerHand) == 17 and not hasAce then
+                break
+            else
+                takeCard(dealerHand)
+            end
+        end
+
         table.insert(output, '')
 
-        if getTotal(playerHand) > getTotal(dealerHand) then
+        local function hasThisHandWon(thisHand, otherHand)
+            return getTotal(thisHand) <= 21 and
+            (getTotal(otherHand) > 21 or getTotal(otherHand) < getTotal(thisHand))
+        end
+
+        if hasThisHandWon(playerHand, dealerHand) then
             table.insert(output, 'Player Wins!')
-        elseif getTotal(dealerHand) > getTotal(playerHand) then
+        elseif hasThisHandWon(dealerHand, playerHand) then
             table.insert(output, 'Dealer Wins!')
         else 
             table.insert(output, "Draw!")
         end
+    end
 
         love.graphics.print(table.concat(output, '\n'), 15, 15)
 end
