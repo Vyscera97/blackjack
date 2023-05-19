@@ -1,35 +1,49 @@
 function love.load()
-    deck = {}
-    for suitIndex, suit in ipairs({'club', 'diamond', 'heart', 'spade'}) do
-        for rank = 1, 13 do
-            table.insert(deck, {suit = suit, rank = rank})
+    Deck = {}    
+    DeckCount = 4
+    for i=1,DeckCount do
+        for suitIndex, suit in ipairs({'club', 'diamond', 'heart', 'spade'}) do
+            for rank = 1, 13 do
+                table.insert(Deck, {suit = suit, rank = rank})
+            end
         end
     end
 
-    function takeCard(hand)
-        table.insert(hand, table.remove(deck, love.math.random(#deck)))
+    function TakeCard(hand)
+        table.insert(hand, table.remove(Deck, love.math.random(#Deck)))
     end
 
-    playerHand = {}
-    takeCard(playerHand)
-    takeCard(playerHand)
+    function HasAce(hand)
+        for cardIndex, card in ipairs(hand) do
+            if card.rank == 1 then
+                return true
+            end
+        end 
+        return false
+    end
 
-    dealerHand = {}
-    takeCard(dealerHand)
-    takeCard(dealerHand)
+    print(#Deck)
 
-    roundOver = false
+    PlayerHand = {}
+    takeCard(PlayerHand)
+    takeCard(PlayerHand)
+
+    DealerHand = {}
+    takeCard(DealerHand)
+    takeCard(DealerHand)
+
+    RoundOver = false
 end
 
 function love.keypressed(key)
-    if not roundOver then
+    if not RoundOver then
         if key == 'h' then
-            takeCard(playerHand)
-            if getTotal(playerHand) >= 21 then
-                roundOver = true
+            takeCard(PlayerHand)
+            if GetTotal(PlayerHand) >= 21 then
+                RoundOver = true
             end
         elseif key == 's' then
-            roundOver = true
+            RoundOver = true
         end
     else
         love.load()
@@ -37,24 +51,28 @@ function love.keypressed(key)
 end
 
 function love.draw()
-    function getTotal(hand)
+    function GetTotal(hand)
         local total = 0
-        hasAce = false
+        local highAce = false
 
         for cardIndex, card in ipairs(hand) do
             if card.rank > 10 then
                 total = total + 10
+            elseif card.rank == 1 then
+                if total < 11 then
+                    total = total + 11
+                    highAce = true
+                else
+                    total = total + 1
+                end
             else
                 total = total + card.rank
             end
-
-            if card.rank == 1 then 
-                hasAce = true
-            end
         end
 
-        if hasAce and total < 12 then
-            total = total + 10
+        if total > 21 and highAce then
+            total = total - 10
+            highAce = false    
         end
 
         return total
@@ -63,46 +81,48 @@ function love.draw()
     local output = {}
 
     table.insert(output, 'Player Hand:')
-    for cardIndex, card in ipairs(playerHand) do
+    for cardIndex, card in ipairs(PlayerHand) do
         table.insert(output, 'suit: '..card.suit..', rank: '..card.rank)
     end
-    table.insert(output, 'Total: '..getTotal(playerHand))
+    table.insert(output, 'Total: '..GetTotal(PlayerHand))
 
     table.insert(output, '')
 
     table.insert(output, 'Dealer Hand:')
-    for cardIndex, card in ipairs(dealerHand) do
-        if not roundOver and cardIndex == 1 then
+    for cardIndex, card in ipairs(DealerHand) do
+        if not RoundOver and cardIndex == 1 then
             table.insert(output, '(Card hidden)')
         else
             table.insert(output, 'suit: '..card.suit..', rank: '..card.rank)
         end        
-    end
-    table.insert(output, 'Total: '..getTotal(dealerHand))       
+    end       
 
-    if roundOver then
-        while getTotal(dealerHand) <= 17 do
-            if getTotal(dealerHand) == 17 and not hasAce then
+    if RoundOver then
+        table.insert(output, 'Total: '..GetTotal(DealerHand))
+        while GetTotal(DealerHand) <= 17 and GetTotal(PlayerHand) < 21 do
+            if GetTotal(DealerHand) == 17 and not HasAce(DealerHand) then
                 break
             else
-                takeCard(dealerHand)
+                takeCard(DealerHand)
             end
         end
 
         table.insert(output, '')
 
         local function hasThisHandWon(thisHand, otherHand)
-            return getTotal(thisHand) <= 21 and
-            (getTotal(otherHand) > 21 or getTotal(otherHand) < getTotal(thisHand))
+            return GetTotal(thisHand) <= 21 and
+            (GetTotal(otherHand) > 21 or GetTotal(otherHand) < GetTotal(thisHand))
         end
 
-        if hasThisHandWon(playerHand, dealerHand) then
+        if hasThisHandWon(PlayerHand, DealerHand) then
             table.insert(output, 'Player Wins!')
-        elseif hasThisHandWon(dealerHand, playerHand) then
+        elseif hasThisHandWon(DealerHand, PlayerHand) then
             table.insert(output, 'Dealer Wins!')
         else 
             table.insert(output, "Draw!")
         end
+    else
+        table.insert(output, 'Total: ')
     end
 
         love.graphics.print(table.concat(output, '\n'), 15, 15)
