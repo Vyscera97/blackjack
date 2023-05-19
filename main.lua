@@ -1,5 +1,18 @@
 function love.load()
-    Deck = {}    
+    love.graphics.setBackgroundColor(1, 1, 1)
+    
+    Images = {}
+    for nameIndex, name in ipairs({
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13,
+        'pip_heart', 'pip_diamond', 'pip_club', 'pip_spade',
+        'mini_heart', 'mini_diamond', 'mini_club', 'mini_spade',
+        'card', 'card_face_down',
+        'face_jack', 'face_queen', 'face_king',
+    }) do
+        Images[name] = love.graphics.newImage('images/'..name..'.png.')
+    end
+    
+    Deck = {}
     DeckCount = 4
     for i=1,DeckCount do
         for suitIndex, suit in ipairs({'club', 'diamond', 'heart', 'spade'}) do
@@ -72,7 +85,7 @@ function love.draw()
 
         if total > 21 and highAce then
             total = total - 10
-            highAce = false    
+            highAce = false
         end
 
         return total
@@ -125,5 +138,55 @@ function love.draw()
         table.insert(output, 'Total: ')
     end
 
-        love.graphics.print(table.concat(output, '\n'), 15, 15)
+    local function displayCard(card, x, y)
+        love.graphics.setColor(1, 1, 1)
+        love.graphics.draw(Images.card, x, y)
+
+        love.graphics.setColor(0, 0, 0)
+        local cardWidth = 53
+        local cardHeight = 73
+        local numberOffsetX = 3
+        local numberOffsetY = 4
+
+        love.graphics.draw(
+            Images[card.rank],
+            x + numberOffsetX,
+            y + numberOffsetY
+        )
+        love.graphics.draw(
+            Images[card.rank],
+            x + cardWidth - numberOffsetX,
+            y + cardHeight - numberOffsetY,
+            0,
+            -1
+        )
+    end
+
+    local testHand1 = {
+        {suit = 'club', rank = 1},
+        {suit = 'diamond', rank = 2},
+        {suit = 'heart', rank = 3},
+        {suit = 'spade', rank = 4},
+        {suit = 'club', rank = 5},
+        {suit = 'diamond', rank = 6},
+        {suit = 'heart', rank = 7}
+    }
+
+    for cardIndex, card in ipairs(testHand1) do
+        displayCard(card, (cardIndex - 1) * 60, 0)
+    end
+
+    local testHand2 = {
+        {suit = 'spade', rank = 8},
+        {suit = 'club', rank = 9},
+        {suit = 'diamond', rank = 10},
+        {suit = 'heart', rank = 11},
+        {suit = 'spade', rank = 12},
+        {suit = 'club', rank = 13},
+    }
+
+    for cardIndex, card in ipairs(testHand2) do
+        displayCard(card, (cardIndex - 1) * 60, 80)
+    end
+
 end
