@@ -25,12 +25,12 @@ function love.load()
     print(#Deck)
 
     PlayerHand = {}
-    takeCard(PlayerHand)
-    takeCard(PlayerHand)
+    TakeCard(PlayerHand)
+    TakeCard(PlayerHand)
 
     DealerHand = {}
-    takeCard(DealerHand)
-    takeCard(DealerHand)
+    TakeCard(DealerHand)
+    TakeCard(DealerHand)
 
     RoundOver = false
 end
@@ -38,7 +38,7 @@ end
 function love.keypressed(key)
     if not RoundOver then
         if key == 'h' then
-            takeCard(PlayerHand)
+            TakeCard(PlayerHand)
             if GetTotal(PlayerHand) >= 21 then
                 RoundOver = true
             end
@@ -103,7 +103,7 @@ function love.draw()
             if GetTotal(DealerHand) == 17 and not HasAce(DealerHand) then
                 break
             else
-                takeCard(DealerHand)
+                TakeCard(DealerHand)
             end
         end
 
